@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🎰 Cute Food Gachapon</title>
+
+<style>
+body {
+    font-family: 'Comic Sans MS', cursive;
+    text-align: center;
+    margin: 0;
+    background: #fffafc;
+}
+
+h1 { margin-top: 10px; }
+
+button {
+    padding: 12px;
+    margin: 6px;
+    border-radius: 15px;
+    border: none;
+    font-size: 16px;
+    background: #ff8fab;
+    color: white;
+    width: 80%;
+    max-width: 300px;
+}
+
+input, select {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 300px;
+}
+
+.pink { background: #ffd6e0; }
+.blue { background: #d6ecff; }
+
+.hidden { display:none; }
+
+/* 🎰 MACHINE */
+.machine {
+    width: 220px;
+    height: 260px;
+    margin: 20px auto;
+    background: #ffc2d1;
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* spinning mini capsules */
+.capsules {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.capsule-mini {
+    width: 30px;
+    height: 30px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+}
+
+/* spin animation */
+.spinCapsules {
+    animation: spinCaps 1s linear infinite;
+}
+
+@keyframes spinCaps {
+    0% { transform: rotate(0); }
+    100% { transform: rotate(360deg); }
+}
+
+/* drop area */
+.drop-zone {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    height: 120px;
+}
+
+/* big capsule */
+.capsule {
+    width: 80px;
+    height: 80px;
+    margin: auto;
+    position: relative;
+    top: -100px;
+    transition: 0.6s;
+}
+
+.capsule.show {
+    top: 20px;
+}
+
+/* capsule parts */
+.top, .bottom {
+    width: 80px;
+    height: 40px;
+    background: white;
+    position: absolute;
+}
+
+.top {
+    border-radius: 40px 40px 0 0;
+}
+
+.bottom {
+    top: 40px;
+    border-radius: 0 0 40px 40px;
+}
+
+/* opening */
+.open .top {
+    transform: translateY(-20px);
+}
+
+.open .bottom {
+    transform: translateY(20px);
+}
+
+/* food text */
+.food-name {
+    position: absolute;
+    top: 30px;
+    width: 100%;
+    font-size: 14px;
+}
+
+/* cute bounce */
+.bounce {
+    animation: bounce 0.4s;
+}
+
+@keyframes bounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎀 Food Gachapon 🎀</h1>
+
+<button onclick="chooseUser('mandy')">Mandy</button>
+<button onclick="chooseUser('sean')">Sean</button>
+
+<div id="app" class="hidden">
+
+<h3>➕ Add Food</h3>
+<input id="name" placeholder="Food name">
+
+<select id="type">
+<option value="food">Food</option>
+<option value="drink">Drink</option>
+</select>
+
+<select id="meal">
+<option value="breakfast">Breakfast</option>
+<option value="brunch">Brunch/Lunch</option>
+<option value="dinner">Dinner</option>
+<option value="dessert">Dessert</option>
+</select>
+
+<select id="budget">
+<option value="low">Low</option>
+<option value="medium">Medium</option>
+<option value="high">High</option>
+</select>
+
+<button onclick="addFood()">Add</button>
+
+<h3>📋 Food List</h3>
+<div id="list"></div>
+
+<!-- 🎰 MACHINE -->
+<div class="machine">
+    <div class="capsules" id="capsules"></div>
+
+    <div class="drop-zone">
+        <div class="capsule hidden" id="selectedCapsule">
+            <div class="top"></div>
+            <div class="bottom"></div>
+            <div class="food-name" id="foodName"></div>
+        </div>
+    </div>
+</div>
+
+<button onclick="spin()">🎰 SPIN</button>
+
+<div id="result"></div>
+
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+<script>
+// 🔥 REPLACE THIS
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let currentUser = "";
+
+// choose user
+function chooseUser(user){
+    currentUser = user;
+    app.classList.remove("hidden");
+    loadFoods();
+
+    document.body.className = user === "mandy" ? "pink" : "blue";
+}
+
+// add food
+function addFood(){
+    if(!name.value) return;
+
+    db.collection("foods").add({
+        user: currentUser,
+        name: name.value,
+        type: type.value,
+        meal: meal.value,
+        budget: budget.value
+    });
+
+    name.value = "";
+}
+
+// load foods (realtime)
+function loadFoods(){
+    db.collection("foods")
+    .where("user","==",currentUser)
+    .onSnapshot(snapshot=>{
+        let html = "";
+
+        snapshot.forEach(doc=>{
+            let f = doc.data();
+
+            html += `
+            <div>
+                ${f.name}
+                ✏️ <button onclick="editFood('${doc.id}','${f.name}')">Edit</button>
+                🗑 <button onclick="deleteFood('${doc.id}')">Delete</button>
+            </div>
+            `;
+        });
+
+        list.innerHTML = html;
+    });
+}
+
+// delete
+function deleteFood(id){
+    db.collection("foods").doc(id).delete();
+}
+
+// edit
+function editFood(id, oldName){
+    let newName = prompt("Edit food:", oldName);
+    if(newName){
+        db.collection("foods").doc(id).update({name:newName});
+    }
+}
+
+// 🎰 SPIN
+function spin(){
+    const capsulesDiv = document.getElementById("capsules");
+    const selected = document.getElementById("selectedCapsule");
+    const foodText = document.getElementById("foodName");
+
+    selected.classList.add("hidden");
+    selected.classList.remove("show","open");
+
+    capsulesDiv.innerHTML = "";
+
+    // create spinning mini capsules
+    for(let i=0;i<12;i++){
+        let c = document.createElement("div");
+        c.className = "capsule-mini";
+
+        let angle = (i / 12) * 360;
+        let radius = 70;
+
+        c.style.left = 90 + radius * Math.cos(angle*Math.PI/180) + "px";
+        c.style.top = 90 + radius * Math.sin(angle*Math.PI/180) + "px";
+
+        capsulesDiv.appendChild(c);
+    }
+
+    capsulesDiv.classList.add("spinCapsules");
+
+    setTimeout(async ()=>{
+        capsulesDiv.classList.remove("spinCapsules");
+
+        let snapshot = await db.collection("foods")
+            .where("user","==",currentUser).get();
+
+        let foods = [];
+        snapshot.forEach(doc => foods.push(doc.data()));
+
+        if(foods.length === 0){
+            result.innerText = "No food 😢";
+            return;
+        }
+
+        let pick = foods[Math.floor(Math.random()*foods.length)];
+
+        // drop capsule
+        selected.classList.remove("hidden");
+        selected.classList.add("show");
+
+        setTimeout(()=>{
+            selected.classList.add("open");
+            foodText.innerText = pick.name;
+
+            result.innerText = "🍽️ " + pick.name;
+            result.classList.add("bounce");
+
+            setTimeout(()=>result.classList.remove("bounce"),400);
+
+        },600);
+
+    },1500);
+}
+</script>
+
+</body>
+</html>
