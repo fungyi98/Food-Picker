@@ -2,23 +2,69 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🎰 Food Gachapon</title>
+<title>🎰 Food Picker</title>
 
 <!-- Lexend Font -->
 <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
 
 <style>
-body { font-family: 'Lexend', sans-serif; text-align:center; margin:0; background:#fff; transition: background 0.5s; }
+body { 
+  font-family: 'Lexend', sans-serif; 
+  text-align:center; 
+  margin:0; 
+  background:#fff; 
+  transition: background 0.5s; 
+}
+
 h1,h2,h3,h4 { margin:10px 0; }
-button { padding:14px; margin:8px; border-radius:15px; border:none; font-size:16px; width:80%; max-width:300px; cursor:pointer; color:white; background:#ff8fab; }
-input,select { padding:10px; margin:5px; border-radius:10px; width:80%; max-width:300px; }
+button { 
+  padding:14px; 
+  margin:8px; 
+  border-radius:15px; 
+  border:none; 
+  font-size:16px; 
+  width:80%; 
+  max-width:300px; 
+  cursor:pointer; 
+  color:white; 
+  background:#ff8fab; 
+}
+input,select { 
+  padding:10px; 
+  margin:5px; 
+  border-radius:10px; 
+  width:80%; 
+  max-width:300px; 
+}
 
 .hidden { display:none; }
 
-.picker-section, .contribution-section { margin: 10px auto; max-width: 400px; }
-.food-list { border:1px solid #ccc; border-radius:10px; padding:10px; background:#f9f9f9; margin-top:10px; max-height:300px; overflow-y:auto; }
+.section { margin: 10px auto; max-width: 400px; }
 
-#spinner { width:300px; height:60px; margin:20px auto; border:2px solid #fbc02d; border-radius:15px; display:flex; overflow:hidden; justify-content:center; align-items:center; font-size:20px; font-weight:bold; background: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+.food-list { 
+  border:1px solid #ccc; 
+  border-radius:10px; 
+  padding:10px; 
+  background:#f9f9f9; 
+  margin-top:10px; 
+  max-height:300px; 
+  overflow-y:auto; 
+}
+
+#picker { 
+  width:300px; 
+  height:60px; 
+  margin:20px auto; 
+  border:2px solid #fbc02d; 
+  border-radius:15px; 
+  display:flex; 
+  justify-content:center; 
+  align-items:center; 
+  font-size:20px; 
+  font-weight:bold; 
+  background: #fff; 
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); 
+}
 
 .bounce { animation:bounce 0.4s; }
 @keyframes bounce { 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
@@ -26,10 +72,10 @@ input,select { padding:10px; margin:5px; border-radius:10px; width:80%; max-widt
 </head>
 <body>
 
-<h1>🎀 Food Gachapon 🎀</h1>
+<h1>🎀 Food Picker 🎀</h1>
 
-<!-- User Picker -->
-<div class="picker-section">
+<!-- Picker Section -->
+<div class="section">
 <h2>Who is choosing today?</h2>
 <button onclick="chooseUserPicker('mandy')">Mandy</button>
 <button onclick="chooseUserPicker('sean')">Sean</button>
@@ -60,14 +106,14 @@ input,select { padding:10px; margin:5px; border-radius:10px; width:80%; max-widt
 <button onclick="spin()">🎰 SPIN</button>
 <button onclick="refreshSpin()">🔄 Spin Again</button>
 
-<!-- Spinner replaces machine -->
-<div id="spinner">--</div>
+<!-- Picker Display -->
+<div id="picker">--</div>
 
 <div id="result"></div>
 </div>
 
-<!-- Contribution -->
-<div class="contribution-section">
+<!-- Contribution Section -->
+<div class="section">
 <h2>Contribute Food/Drink</h2>
 <button onclick="chooseUserContribution('mandy')">Mandy</button>
 <button onclick="chooseUserContribution('sean')">Sean</button>
@@ -127,7 +173,9 @@ db.collection("foods").onSnapshot(snapshot=>{
     html += `<div class="food-item">${f.name} (${f.type} | ${f.meal} | ${f.budget})</div>`;
   });
   document.getElementById("list").innerHTML = html;
-  updateAvailableCount();
+
+  // Only update available count if a user is selected
+  if(currentUser) updateAvailableCount();
 });
 
 // USER SELECTION
@@ -136,6 +184,7 @@ function chooseUserPicker(user){
   document.body.style.background = user==="mandy"?"#ffd6e0":"#d6ecff";
   updateAvailableCount();
 }
+
 function chooseUserContribution(user){
   currentUser = user;
   document.getElementById("contributionApp").classList.remove("hidden");
@@ -156,6 +205,7 @@ function updateAvailableCount(){
   );
   document.getElementById("availableCount").innerText = "Available: "+filtered.length;
 }
+
 document.getElementById("filterType").addEventListener("change",updateAvailableCount);
 document.getElementById("filterMeal").addEventListener("change",updateAvailableCount);
 document.getElementById("filterBudget").addEventListener("change",updateAvailableCount);
@@ -174,9 +224,9 @@ function addFood(){
   nameInput.value = "";
 }
 
-// SPIN (spinner instead of machine)
+// SPIN (picker style)
 function spin(){
-  const spinner = document.getElementById("spinner");
+  const picker = document.getElementById("picker");
   const typeFilter = document.getElementById("filterType").value;
   const mealFilter = document.getElementById("filterMeal").value;
   const budgetFilter = document.getElementById("filterBudget").value;
@@ -189,7 +239,7 @@ function spin(){
   );
 
   if(filtered.length===0){
-    spinner.innerText="--";
+    picker.innerText="--";
     document.getElementById("result").innerText="No food 😢";
     return;
   }
@@ -197,13 +247,13 @@ function spin(){
   let pick = filtered[Math.floor(Math.random()*filtered.length)];
   let i=0;
   let interval = setInterval(()=>{
-    spinner.innerText = filtered[i].name;
+    picker.innerText = filtered[i].name;
     i=(i+1)%filtered.length;
   },100);
 
   setTimeout(()=>{
     clearInterval(interval);
-    spinner.innerText = pick.name;
+    picker.innerText = pick.name;
     const result=document.getElementById("result");
     result.innerText="🍽️ "+pick.name;
     result.classList.add("bounce");
@@ -213,5 +263,6 @@ function spin(){
 
 function refreshSpin(){ spin(); }
 </script>
+
 </body>
 </html>
