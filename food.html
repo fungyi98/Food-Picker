@@ -28,7 +28,7 @@ button {
   max-width:300px; 
   cursor:pointer; 
   color:white; 
-  background:#b39ddb; /* light purple */ 
+  background:#b39ddb; 
 }
 
 input,select { 
@@ -149,7 +149,7 @@ input,select {
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 <script>
-// 🔥 Firebase Config
+// 🔥 Firebase Config - replace with your actual config
 const firebaseConfig = {
   apiKey: "YOUR_KEY",
   authDomain: "YOUR_DOMAIN",
@@ -165,7 +165,7 @@ const db = firebase.firestore();
 let currentUser = "";
 let currentFoods = [];
 
-// LOAD FOOD LIST ALWAYS (persistent)
+// LOAD FOOD LIST (persistent)
 db.collection("foods").onSnapshot(snapshot=>{
   currentFoods = [];
   let html = "";
@@ -175,8 +175,7 @@ db.collection("foods").onSnapshot(snapshot=>{
     html += `<div class="food-item">${f.name} (${f.type} | ${f.meal} | ${f.budget})</div>`;
   });
   document.getElementById("list").innerHTML = html;
-
-  if(currentUser) updateAvailableCount();
+  updateAvailableCount();
 });
 
 // USER SELECTION
@@ -199,12 +198,14 @@ function updateAvailableCount(){
   const budgetFilter = document.getElementById("filterBudget").value;
 
   const filtered = currentFoods.filter(f =>
-    (currentUser===""||f.user===currentUser) &&
-    (typeFilter==='any'||f.type===typeFilter) &&
-    (mealFilter==='any'||f.meal===mealFilter) &&
-    (budgetFilter==='any'||f.budget===budgetFilter)
+    (currentUser === "" || f.user === currentUser) &&
+    (typeFilter === 'any' || f.type === typeFilter) &&
+    (mealFilter === 'any' || f.meal === mealFilter) &&
+    (budgetFilter === 'any' || f.budget === budgetFilter)
   );
-  document.getElementById("availableCount").innerText = "Available: "+filtered.length;
+
+  document.getElementById("availableCount").innerText = "Available: " + filtered.length;
+  return filtered; // return filtered list for spin
 }
 
 document.getElementById("filterType").addEventListener("change",updateAvailableCount);
@@ -215,6 +216,7 @@ document.getElementById("filterBudget").addEventListener("change",updateAvailabl
 function addFood(){
   const nameInput = document.getElementById("name");
   if(!nameInput.value) return;
+
   db.collection("foods").add({
     user: currentUser,
     name: nameInput.value,
@@ -225,41 +227,34 @@ function addFood(){
   nameInput.value = "";
 }
 
-// SPIN (picker style)
+// SPIN (slot-machine style)
 function spin(){
   const picker = document.getElementById("picker");
-  const typeFilter = document.getElementById("filterType").value;
-  const mealFilter = document.getElementById("filterMeal").value;
-  const budgetFilter = document.getElementById("filterBudget").value;
+  const filtered = updateAvailableCount();
 
-  const filtered = currentFoods.filter(f =>
-    f.user===currentUser &&
-    (typeFilter==='any'||f.type===typeFilter) &&
-    (mealFilter==='any'||f.meal===mealFilter) &&
-    (budgetFilter==='any'||f.budget===budgetFilter)
-  );
-
-  if(filtered.length===0){
-    picker.innerText="--";
-    document.getElementById("result").innerText="No food 😢";
+  if(filtered.length === 0){
+    picker.innerText = "--";
+    document.getElementById("result").innerText = "No food 😢";
     return;
   }
 
-  let pick = filtered[Math.floor(Math.random()*filtered.length)];
-  let i=0;
+  let pickIndex = Math.floor(Math.random() * filtered.length);
+  let i = 0;
+
   let interval = setInterval(()=>{
     picker.innerText = filtered[i].name;
-    i=(i+1)%filtered.length;
-  },100);
+    i = (i + 1) % filtered.length;
+  }, 100);
 
   setTimeout(()=>{
     clearInterval(interval);
-    picker.innerText = pick.name;
-    const result=document.getElementById("result");
-    result.innerText="🍽️ "+pick.name;
+    picker.innerText = filtered[pickIndex].name;
+
+    const result = document.getElementById("result");
+    result.innerText = "🍽️ " + filtered[pickIndex].name;
     result.classList.add("bounce");
-    setTimeout(()=>result.classList.remove("bounce"),400);
-  },1500);
+    setTimeout(()=> result.classList.remove("bounce"), 400);
+  }, 1500);
 }
 
 function refreshSpin(){ spin(); }
