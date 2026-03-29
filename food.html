@@ -1,6 +1,21 @@
-function doGet() {
-  const food = getRandomFood();
-  return ContentService
-    .createTextOutput(JSON.stringify({ food: food }))
-    .setMimeType(ContentService.MimeType.JSON);
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Random Food Picker</title>
+</head>
+<body>
+
+<h1>🍽️ What Should I Eat?</h1>
+<button onclick="getFood()">Pick Food</button>
+<p id="result"></p>
+
+<script>
+async function getFood() {
+  const response = await fetch("https://script.google.com/macros/s/AKfycbzv0cIdXr3LrtySBM3Jfw8tPQackyQ6fpWWUD_3vBz5yRvEcf1jUxMhbJfmOMd-Wcf8_Q/exec");
+  const data = await response.json();
+  document.getElementById("result").innerText = data.food;
 }
+</script>
+
+</body>
+</html>
