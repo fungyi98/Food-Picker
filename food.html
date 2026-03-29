@@ -1,36 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>🎰 Food Picker</title>
 
   <!-- Lexend Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet"/>
+  https://fonts.googleapis.com/css2?family=Lexend&display=swap
 
   <style>
     :root{
       --pink:#ffd6e0;
       --blue:#d6ecff;
       --lav:#b39ddb;
+      --lav2:#7e57c2;
       --gold:#fbc02d;
-      --bg:#fff;
+      --bg:#ffffff;
       --card:#f9f9f9;
       --text:#222;
+      --border: rgba(0,0,0,.12);
     }
+
     body{
       font-family:'Lexend', sans-serif;
       text-align:center;
       margin:0;
       background:var(--bg);
       color:var(--text);
-      transition:background .4s ease;
+      transition:background .35s ease;
     }
-    h1,h2,h3,h4{ margin:10px 0; }
+
+    h1,h2,h3{ margin:10px 0; }
+
     .section{
       margin:12px auto;
-      max-width:460px;
+      max-width:520px;
       padding:0 14px;
     }
+
     .card{
       background:#fff;
       border-radius:18px;
@@ -39,12 +46,14 @@
       margin:12px 0;
       border:1px solid rgba(0,0,0,.06);
     }
+
     .row{
       display:flex;
       gap:10px;
       justify-content:center;
       flex-wrap:wrap;
     }
+
     button{
       padding:14px;
       margin:6px;
@@ -52,21 +61,22 @@
       border:none;
       font-size:15px;
       width:80%;
-      max-width:320px;
+      max-width:340px;
       cursor:pointer;
       color:white;
       background:var(--lav);
       transition:transform .08s ease, opacity .2s ease;
+      font-family:'Lexend', sans-serif;
     }
     button:active{ transform:scale(.98); }
-    button.secondary{ background:#7e57c2; }
+    button.secondary{ background:var(--lav2); }
     button.danger{ background:#ef5350; }
     button.ghost{
       background:#fff;
       color:#5e35b1;
       border:1px solid rgba(94,53,177,.25);
     }
-    .miniBtn{
+    button.miniBtn{
       width:auto;
       max-width:none;
       padding:10px 12px;
@@ -74,12 +84,17 @@
       border-radius:12px;
       margin:4px;
     }
+    button:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
     input, select{
       padding:10px;
       margin:6px 0;
       border-radius:12px;
       width:92%;
-      max-width:340px;
+      max-width:360px;
       border:1px solid rgba(0,0,0,.15);
       outline:none;
       font-family:'Lexend', sans-serif;
@@ -88,8 +103,11 @@
       border-color: rgba(94,53,177,.55);
       box-shadow:0 0 0 4px rgba(94,53,177,.12);
     }
+
+    .muted{ opacity:.72; font-size:13px; line-height:1.35; }
     .hidden{ display:none; }
-    .muted{ opacity:.72; font-size:13px; line-height:1.3; }
+    .divider{ height:1px; background:rgba(0,0,0,.08); margin:12px 0; }
+
     .pill{
       display:inline-block;
       padding:6px 10px;
@@ -113,12 +131,14 @@
       font-weight:800;
       background:#fff;
       box-shadow:0 8px 22px rgba(0,0,0,.12);
+      user-select:none;
     }
+
     .bounce{ animation:bounce .4s; }
     @keyframes bounce{ 0%{transform:scale(1)} 50%{transform:scale(1.12)} 100%{transform:scale(1)} }
 
     .food-list{
-      border:1px solid rgba(0,0,0,.12);
+      border:1px solid var(--border);
       border-radius:14px;
       padding:10px;
       background:var(--card);
@@ -127,6 +147,7 @@
       overflow-y:auto;
       text-align:left;
     }
+
     .food-item{
       background:#fff;
       border-radius:14px;
@@ -138,18 +159,23 @@
       align-items:flex-start;
       gap:10px;
     }
+
     .food-meta{ font-size:12px; opacity:.75; margin-top:3px; }
     .food-actions{ display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-    .divider{ height:1px; background:rgba(0,0,0,.08); margin:12px 0; }
 
-    /* simple modal */
+    /* Modal */
     .modalOverlay{
-      position:fixed; inset:0;
+      position:fixed;
+      inset:0;
       background:rgba(0,0,0,.35);
-      display:flex; align-items:center; justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       padding:16px;
-      z-index:999;
+      z-index:9999;
+      pointer-events:auto;
     }
+
     .modal{
       width:min(520px, 96vw);
       background:#fff;
@@ -157,6 +183,7 @@
       padding:14px;
       box-shadow:0 20px 60px rgba(0,0,0,.25);
       text-align:center;
+      pointer-events:auto;
     }
   </style>
 </head>
@@ -190,6 +217,7 @@
       <div class="divider"></div>
 
       <h3>Filter Options</h3>
+
       <select id="filterType">
         <option value="any">Any Type</option>
         <option value="food">Food</option>
@@ -259,9 +287,7 @@
         </select>
 
         <button onclick="addFood()">Add</button>
-        <div class="muted">
-          Tip: keep names short and specific (e.g., “Chicken rice – Village Park”).
-        </div>
+        <div class="muted">Tip: “Chicken rice – Village Park” is better than “Chicken rice”.</div>
       </div>
 
       <div class="divider"></div>
@@ -273,42 +299,48 @@
   </div>
 
   <!-- Edit Modal -->
-  <div id="modalOverlay" class="modalOverlay hidden">
-    <div class="modal">
+  <div id="modalOverlay" class="modalOverlay hidden" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Edit item modal">
       <h3>Edit Item</h3>
+
       <input id="editName" placeholder="Name" maxlength="60" />
+
       <select id="editType">
         <option value="food">Food</option>
         <option value="drink">Drink</option>
       </select>
+
       <select id="editMeal">
         <option value="breakfast">Breakfast</option>
         <option value="brunch">Brunch/Lunch</option>
         <option value="dinner">Dinner</option>
         <option value="dessert">Dessert</option>
       </select>
+
       <select id="editBudget">
         <option value="low">Low</option>
         <option value="medium">Medium</option>
         <option value="high">High</option>
       </select>
+
       <div class="row">
         <button class="miniBtn secondary" onclick="saveEdit()">Save</button>
         <button class="miniBtn ghost" onclick="closeModal()">Cancel</button>
       </div>
+
       <div class="muted" id="editHint"></div>
     </div>
   </div>
 
-  <!-- Firebase v8 (namespaced) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <!-- ✅ Correct Firebase scripts (v8 namespaced) -->
+  <script src="https://www.gstatic.com.10.0/firebase-app.js</script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
-    // =========================
-    // 1) Firebase Config
-    // =========================
+    /**********************
+     * 0) Firebase Config
+     **********************/
     const firebaseConfig = {
       apiKey: "YOUR_KEY",
       authDomain: "YOUR_DOMAIN",
@@ -322,26 +354,25 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // =========================
-    // 2) App State
-    // =========================
+    /**********************
+     * 1) App State
+     **********************/
     let pickerUser = "";   // mandy | sean | both
     let contribUser = "";  // mandy | sean
-    let currentFoods = []; // {id, name, type, meal, budget, user, ownerUid, createdAt}
-
+    let currentFoods = []; // {id, name, type, meal, budget, user, ownerUid, createdAt, updatedAt}
     let uid = null;
 
-    // No-repeat cycle state (per filter snapshot)
+    // No-repeat cycle state (per picker+filters)
     let cycleKey = "";
-    let cyclePoolIds = new Set(); // remaining doc IDs in current cycle
+    let cyclePoolIds = new Set();
 
     // Edit modal state
     let editingId = null;
 
-    // =========================
-    // 3) Auth (Anonymous)
-    // =========================
-    auth.onAuthStateChanged(async (user) => {
+    /**********************
+     * 2) Auth (Anonymous)
+     **********************/
+    auth.onAuthStateChanged((user) => {
       if (user) {
         uid = user.uid;
         document.getElementById("authStatus").innerText =
@@ -357,50 +388,62 @@
       console.error(err);
     });
 
-    // =========================
-    // 4) Live Food List
-    // =========================
-    db.collection("foods")
-      .orderBy("createdAt", "desc")
-      .onSnapshot(snapshot => {
-        currentFoods = [];
-        snapshot.forEach(doc => currentFoods.push({ id: doc.id, ...doc.data() }));
+    /**********************
+     * 3) Live Food List
+     *    (no orderBy to avoid errors if older docs lack createdAt)
+     **********************/
+    db.collection("foods").onSnapshot(snapshot => {
+      currentFoods = [];
+      snapshot.forEach(doc => currentFoods.push({ id: doc.id, ...doc.data() }));
 
-        renderList();
-        updateAvailableCountAndCycle();
-      }, err => {
-        console.error(err);
+      // newest first if we have createdAt
+      currentFoods.sort((a,b) => {
+        const at = a.createdAt?.seconds || 0;
+        const bt = b.createdAt?.seconds || 0;
+        return bt - at;
       });
 
-    // =========================
-    // 5) UI Helpers
-    // =========================
+      renderList();
+      updateAvailableCountAndCycle();
+    }, err => console.error(err));
+
+    /**********************
+     * 4) UI / Helpers
+     **********************/
     function setBackgroundByPickerUser() {
-      if (pickerUser === "mandy") document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--pink');
-      else if (pickerUser === "sean") document.body.style.background = getComputedStyle(document.documentElement).getPropertyValue('--blue');
-      else document.body.style.background = "#fff";
+      if (pickerUser === "mandy") document.body.style.background = "var(--pink)";
+      else if (pickerUser === "sean") document.body.style.background = "var(--blue)";
+      else document.body.style.background = "var(--bg)";
     }
 
     function setPickerUser(user){
       pickerUser = user;
       setBackgroundByPickerUser();
-      resetCycle(); // filters/picker changed => new cycle
+      resetCycle();
       updateAvailableCountAndCycle();
     }
 
     function setContribUser(user){
       contribUser = user;
       document.getElementById("contributionApp").classList.remove("hidden");
-      // subtle background still follows picker user; contribution doesn't override picker mode
     }
 
     function normalizeName(s){
       return (s || "").trim().replace(/\s+/g, " ");
     }
 
-    // =========================
-    // 6) Filtering + Cycle
-    // =========================
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    /**********************
+     * 5) Filtering + Cycle
+     **********************/
     function getFilters(){
       return {
         type: document.getElementById("filterType").value,
@@ -411,14 +454,13 @@
     }
 
     function matchesPickerUser(f){
-      if (!pickerUser) return true; // not used, but safe
+      if (!pickerUser) return false;
       if (pickerUser === "both") return (f.user === "mandy" || f.user === "sean");
       return f.user === pickerUser;
     }
 
     function getFilteredFoodsForPicker(){
       const { type, meal, budget } = getFilters();
-
       return currentFoods.filter(f =>
         matchesPickerUser(f) &&
         (type === "any" || f.type === type) &&
@@ -429,7 +471,6 @@
 
     function getFilteredFoodsForList(){
       const { search } = getFilters();
-      // list search filters the displayed list, not the picker filters
       if (!search) return currentFoods;
       return currentFoods.filter(f => (f.name || "").toLowerCase().includes(search));
     }
@@ -440,16 +481,15 @@
     }
 
     function updateAvailableCountAndCycle(){
-      const filtered = getFilteredFoodsForPicker();
+      const filtered = pickerUser ? getFilteredFoodsForPicker() : [];
       document.getElementById("availableCount").innerText = `Available: ${filtered.length}`;
 
-      // ensure cycle pool is aligned to current filters
       const newKey = makeCycleKey();
       if (newKey !== cycleKey) {
         cycleKey = newKey;
         cyclePoolIds = new Set(filtered.map(x => x.id));
       } else {
-        // keep only IDs that still exist under current filter
+        // keep pool valid if list changed
         const valid = new Set(filtered.map(x => x.id));
         cyclePoolIds.forEach(id => { if (!valid.has(id)) cyclePoolIds.delete(id); });
       }
@@ -460,7 +500,7 @@
 
     function resetCycle(){
       cycleKey = makeCycleKey();
-      const filtered = getFilteredFoodsForPicker();
+      const filtered = pickerUser ? getFilteredFoodsForPicker() : [];
       cyclePoolIds = new Set(filtered.map(x => x.id));
       document.getElementById("cycleCount").innerText = `Cycle left: ${cyclePoolIds.size}`;
     }
@@ -470,9 +510,9 @@
     document.getElementById("filterBudget").addEventListener("change", () => { resetCycle(); updateAvailableCountAndCycle(); });
     document.getElementById("search").addEventListener("input", renderList);
 
-    // =========================
-    // 7) Add / Edit / Delete
-    // =========================
+    /**********************
+     * 6) Add / Edit / Delete
+     **********************/
     async function addFood(){
       const name = normalizeName(document.getElementById("name").value);
       if (!name) return;
@@ -501,3 +541,186 @@
       document.getElementById("name").value = "";
     }
 
+    function openEditModal(id){
+      const item = currentFoods.find(x => x.id === id);
+      if (!item) return;
+
+      if (item.ownerUid !== uid) {
+        alert("You can only edit items added from this device.");
+        return;
+      }
+
+      editingId = id;
+      document.getElementById("editName").value = item.name || "";
+      document.getElementById("editType").value = item.type || "food";
+      document.getElementById("editMeal").value = item.meal || "brunch";
+      document.getElementById("editBudget").value = item.budget || "medium";
+      document.getElementById("editHint").innerText =
+        `Owner: ${item.ownerUid ? (item.ownerUid.slice(0,6) + "…" + item.ownerUid.slice(-4)) : "unknown"}`;
+
+      const overlay = document.getElementById("modalOverlay");
+      overlay.classList.remove("hidden");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+
+    function closeModal(){
+      editingId = null;
+      const overlay = document.getElementById("modalOverlay");
+      overlay.classList.add("hidden");
+      overlay.setAttribute("aria-hidden", "true");
+    }
+
+    async function saveEdit(){
+      if (!editingId) return;
+
+      const item = currentFoods.find(x => x.id === editingId);
+      if (!item) return;
+
+      if (item.ownerUid !== uid) {
+        alert("You can only edit items added from this device.");
+        return;
+      }
+
+      const name = normalizeName(document.getElementById("editName").value);
+      if (!name) {
+        alert("Name cannot be empty.");
+        return;
+      }
+
+      await db.collection("foods").doc(editingId).update({
+        name,
+        type: document.getElementById("editType").value,
+        meal: document.getElementById("editMeal").value,
+        budget: document.getElementById("editBudget").value,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+
+      closeModal();
+    }
+
+    async function deleteFood(id){
+      const item = currentFoods.find(x => x.id === id);
+      if (!item) return;
+
+      if (item.ownerUid !== uid) {
+        alert("You can only delete items added from this device.");
+        return;
+      }
+
+      if (!confirm(`Delete "${item.name}"?`)) return;
+      await db.collection("foods").doc(id).delete();
+    }
+
+    /**********************
+     * 7) Render List
+     **********************/
+    function renderList(){
+      const list = document.getElementById("list");
+      const data = getFilteredFoodsForList();
+
+      if (data.length === 0) {
+        list.innerHTML = `<div class="muted" style="padding:10px;">No items yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = data.map(f => {
+        const owned = (uid && f.ownerUid === uid);
+        const ownerTag = f.user ? f.user.toUpperCase() : "UNKNOWN";
+
+        return `
+          <div class="food-item">
+            <div>
+              <div><b>${escapeHtml(f.name)}</b></div>
+              <div class="food-meta">
+                ${escapeHtml(ownerTag)} • ${escapeHtml(f.type)} • ${escapeHtml(f.meal)} • ${escapeHtml(f.budget)}
+              </div>
+            </div>
+            <div class="food-actions">
+              <button class="miniBtn ghost"
+                onclick="openEditModal('${f.id}')"
+                ${owned ? "" : "disabled"}>
+                ✏️ Edit
+              </button>
+              <button class="miniBtn danger"
+                onclick="deleteFood('${f.id}')"
+                ${owned ? "" : "disabled"}>
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    /**********************
+     * 8) Spin (slot + no repeats)
+     **********************/
+    function spin(){
+      const picker = document.getElementById("picker");
+      const result = document.getElementById("result");
+
+      if (!pickerUser) {
+        result.innerText = "Pick who is choosing first (Mandy / Sean / Both) 🙂";
+        picker.innerText = "--";
+        return;
+      }
+
+      // Freeze snapshot for this spin
+      const filtered = updateAvailableCountAndCycle();
+
+      if (filtered.length === 0) {
+        picker.innerText = "--";
+        result.innerText = "No options 😢";
+        return;
+      }
+
+      // If cycle empty, reset automatically
+      if (cyclePoolIds.size === 0) resetCycle();
+
+      // Choose only from remaining pool
+      let remaining = filtered.filter(x => cyclePoolIds.has(x.id));
+      if (remaining.length === 0) {
+        resetCycle();
+        remaining = filtered.filter(x => cyclePoolIds.has(x.id));
+      }
+
+      const pickIndex = Math.floor(Math.random() * remaining.length);
+      const picked = remaining[pickIndex];
+
+      // Slot animation over FULL filtered list (visual only)
+      let i = 0;
+      const interval = setInterval(() => {
+        picker.innerText = filtered[i].name;
+        i = (i + 1) % filtered.length;
+      }, 95);
+
+      setTimeout(() => {
+        clearInterval(interval);
+        picker.innerText = picked.name;
+
+        result.innerText = "🍽️ " + picked.name;
+        result.classList.add("bounce");
+        setTimeout(() => result.classList.remove("bounce"), 400);
+
+        // consume from cycle pool
+        cyclePoolIds.delete(picked.id);
+        document.getElementById("cycleCount").innerText = `Cycle left: ${cyclePoolIds.size}`;
+      }, 1400);
+    }
+
+    /**********************
+     * 9) Modal Safety (prevents “stuck”)
+     **********************/
+    // click outside modal closes it
+    document.getElementById("modalOverlay").addEventListener("click", (e) => {
+      if (e.target.id === "modalOverlay") closeModal();
+    });
+
+    // ESC closes it
+    document.addEventListener("keydown", (e) => {
+      const overlay = document.getElementById("modalOverlay");
+      if (e.key === "Escape" && !overlay.classList.contains("hidden")) closeModal();
+    });
+  </script>
+</body>
+</html>
