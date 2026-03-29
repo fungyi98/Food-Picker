@@ -6,7 +6,7 @@
   <title>🎰 Food Picker</title>
 
   <!-- Lexend Font -->
-  https://fonts.googleapis.com/css2?family=Lexend&display=swap
+  <link href="https://fonts.googleapis.com/css2?family=Lexend&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -84,10 +84,7 @@
       border-radius:12px;
       margin:4px;
     }
-    button:disabled{
-      opacity:.45;
-      cursor:not-allowed;
-    }
+    button:disabled{ opacity:.45; cursor:not-allowed; }
 
     input, select{
       padding:10px;
@@ -105,7 +102,7 @@
     }
 
     .muted{ opacity:.72; font-size:13px; line-height:1.35; }
-    .hidden{ display:none; }
+    .hidden{ display:none !important; }
     .divider{ height:1px; background:rgba(0,0,0,.08); margin:12px 0; }
 
     .pill{
@@ -209,9 +206,6 @@
         <button class="miniBtn" onclick="setPickerUser('mandy')">Mandy</button>
         <button class="miniBtn" onclick="setPickerUser('sean')">Sean</button>
         <button class="miniBtn secondary" onclick="setPickerUser('both')">Both</button>
-      </div>
-      <div class="muted">
-        Picker mode filters by whose list you want to choose from.
       </div>
 
       <div class="divider"></div>
@@ -324,23 +318,23 @@
       </select>
 
       <div class="row">
-        <button class="miniBtn secondary" onclick="saveEdit()">Save</button>
-        <button class="miniBtn ghost" onclick="closeModal()">Cancel</button>
+        <button type="button" class="miniBtn secondary" onclick="saveEdit()">Save</button>
+        <button type="button" class="miniBtn ghost" onclick="closeModal()">Cancel</button>
       </div>
 
       <div class="muted" id="editHint"></div>
     </div>
   </div>
 
-  <!-- ✅ Correct Firebase scripts (v8 namespaced) -->
-  <script src="https://www.gstatic.com.10.0/firebase-app.js</script>
+  <!-- ✅ Correct Firebase scripts (v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
   <script>
-    /**********************
-     * 0) Firebase Config
-     **********************/
+    // =========================
+    // Firebase Config
+    // =========================
     const firebaseConfig = {
       apiKey: "YOUR_KEY",
       authDomain: "YOUR_DOMAIN",
@@ -354,24 +348,22 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    /**********************
-     * 1) App State
-     **********************/
+    // =========================
+    // State
+    // =========================
     let pickerUser = "";   // mandy | sean | both
     let contribUser = "";  // mandy | sean
-    let currentFoods = []; // {id, name, type, meal, budget, user, ownerUid, createdAt, updatedAt}
+    let currentFoods = [];
     let uid = null;
 
-    // No-repeat cycle state (per picker+filters)
     let cycleKey = "";
     let cyclePoolIds = new Set();
 
-    // Edit modal state
     let editingId = null;
 
-    /**********************
-     * 2) Auth (Anonymous)
-     **********************/
+    // =========================
+    // Auth (Anonymous)
+    // =========================
     auth.onAuthStateChanged((user) => {
       if (user) {
         uid = user.uid;
@@ -388,34 +380,43 @@
       console.error(err);
     });
 
-    /**********************
-     * 3) Live Food List
-     *    (no orderBy to avoid errors if older docs lack createdAt)
-     **********************/
+    // =========================
+    // Live list
+    // =========================
     db.collection("foods").onSnapshot(snapshot => {
       currentFoods = [];
       snapshot.forEach(doc => currentFoods.push({ id: doc.id, ...doc.data() }));
 
-      // newest first if we have createdAt
-      currentFoods.sort((a,b) => {
-        const at = a.createdAt?.seconds || 0;
-        const bt = b.createdAt?.seconds || 0;
-        return bt - at;
-      });
+      // newest first (if timestamps exist)
+      currentFoods.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
       renderList();
       updateAvailableCountAndCycle();
     }, err => console.error(err));
 
-    /**********************
-     * 4) UI / Helpers
-     **********************/
+    // =========================
+    // Helpers
+    // =========================
+    function normalizeName(s){
+      return (s || "").trim().replace(/\s+/g, " ");
+    }
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
     function setBackgroundByPickerUser() {
       if (pickerUser === "mandy") document.body.style.background = "var(--pink)";
       else if (pickerUser === "sean") document.body.style.background = "var(--blue)";
       else document.body.style.background = "var(--bg)";
     }
 
+    // =========================
+    // Picker / Contribution user
+    // =========================
     function setPickerUser(user){
       pickerUser = user;
       setBackgroundByPickerUser();
@@ -428,22 +429,9 @@
       document.getElementById("contributionApp").classList.remove("hidden");
     }
 
-    function normalizeName(s){
-      return (s || "").trim().replace(/\s+/g, " ");
-    }
-
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    /**********************
-     * 5) Filtering + Cycle
-     **********************/
+    // =========================
+    // Filters + Cycle
+    // =========================
     function getFilters(){
       return {
         type: document.getElementById("filterType").value,
@@ -489,7 +477,6 @@
         cycleKey = newKey;
         cyclePoolIds = new Set(filtered.map(x => x.id));
       } else {
-        // keep pool valid if list changed
         const valid = new Set(filtered.map(x => x.id));
         cyclePoolIds.forEach(id => { if (!valid.has(id)) cyclePoolIds.delete(id); });
       }
@@ -510,9 +497,9 @@
     document.getElementById("filterBudget").addEventListener("change", () => { resetCycle(); updateAvailableCountAndCycle(); });
     document.getElementById("search").addEventListener("input", renderList);
 
-    /**********************
-     * 6) Add / Edit / Delete
-     **********************/
+    // =========================
+    // Add / Edit / Delete
+    // =========================
     async function addFood(){
       const name = normalizeName(document.getElementById("name").value);
       if (!name) return;
@@ -611,9 +598,9 @@
       await db.collection("foods").doc(id).delete();
     }
 
-    /**********************
-     * 7) Render List
-     **********************/
+    // =========================
+    // Render List
+    // =========================
     function renderList(){
       const list = document.getElementById("list");
       const data = getFilteredFoodsForList();
@@ -636,12 +623,12 @@
               </div>
             </div>
             <div class="food-actions">
-              <button class="miniBtn ghost"
+              <button type="button" class="miniBtn ghost"
                 onclick="openEditModal('${f.id}')"
                 ${owned ? "" : "disabled"}>
                 ✏️ Edit
               </button>
-              <button class="miniBtn danger"
+              <button type="button" class="miniBtn danger"
                 onclick="deleteFood('${f.id}')"
                 ${owned ? "" : "disabled"}>
                 🗑️ Delete
@@ -652,9 +639,9 @@
       }).join("");
     }
 
-    /**********************
-     * 8) Spin (slot + no repeats)
-     **********************/
+    // =========================
+    // Spin (slot + no repeats)
+    // =========================
     function spin(){
       const picker = document.getElementById("picker");
       const result = document.getElementById("result");
@@ -665,7 +652,6 @@
         return;
       }
 
-      // Freeze snapshot for this spin
       const filtered = updateAvailableCountAndCycle();
 
       if (filtered.length === 0) {
@@ -674,20 +660,16 @@
         return;
       }
 
-      // If cycle empty, reset automatically
       if (cyclePoolIds.size === 0) resetCycle();
 
-      // Choose only from remaining pool
       let remaining = filtered.filter(x => cyclePoolIds.has(x.id));
       if (remaining.length === 0) {
         resetCycle();
         remaining = filtered.filter(x => cyclePoolIds.has(x.id));
       }
 
-      const pickIndex = Math.floor(Math.random() * remaining.length);
-      const picked = remaining[pickIndex];
+      const picked = remaining[Math.floor(Math.random() * remaining.length)];
 
-      // Slot animation over FULL filtered list (visual only)
       let i = 0;
       const interval = setInterval(() => {
         picker.innerText = filtered[i].name;
@@ -702,25 +684,37 @@
         result.classList.add("bounce");
         setTimeout(() => result.classList.remove("bounce"), 400);
 
-        // consume from cycle pool
         cyclePoolIds.delete(picked.id);
         document.getElementById("cycleCount").innerText = `Cycle left: ${cyclePoolIds.size}`;
       }, 1400);
     }
 
-    /**********************
-     * 9) Modal Safety (prevents “stuck”)
-     **********************/
-    // click outside modal closes it
+    // =========================
+    // Modal Safety (prevents “stuck”)
+    // =========================
     document.getElementById("modalOverlay").addEventListener("click", (e) => {
       if (e.target.id === "modalOverlay") closeModal();
     });
 
-    // ESC closes it
     document.addEventListener("keydown", (e) => {
       const overlay = document.getElementById("modalOverlay");
-      if (e.key === "Escape" && !overlay.classList.contains("hidden")) closeModal();
+      if (e.key === "Escape" && overlay && !overlay.classList.contains("hidden")) closeModal();
     });
+
+    // =========================
+    // IMPORTANT: expose functions to inline onclick
+    // (this guarantees buttons work even if bundlers/strict mode changes scope)
+    // =========================
+    window.setPickerUser = setPickerUser;
+    window.setContribUser = setContribUser;
+    window.addFood = addFood;
+    window.openEditModal = openEditModal;
+    window.closeModal = closeModal;
+    window.saveEdit = saveEdit;
+    window.deleteFood = deleteFood;
+    window.spin = spin;
+    window.resetCycle = resetCycle;
   </script>
 </body>
 </html>
+``
