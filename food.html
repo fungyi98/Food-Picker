@@ -2,339 +2,300 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🎰 Cute Food Gachapon</title>
-
+<title>🎰 Food Gachapon</title>
 <style>
-body {
-    font-family: 'Comic Sans MS', cursive;
-    text-align: center;
-    margin: 0;
-    background: #fffafc;
-}
-
-h1 { margin-top: 10px; }
-
-button {
-    padding: 12px;
-    margin: 6px;
-    border-radius: 15px;
-    border: none;
-    font-size: 16px;
-    background: #ff8fab;
-    color: white;
-    width: 80%;
-    max-width: 300px;
-}
-
-input, select {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 10px;
-    width: 80%;
-    max-width: 300px;
-}
-
-.pink { background: #ffd6e0; }
-.blue { background: #d6ecff; }
-
-.hidden { display:none; }
-
-/* 🎰 MACHINE */
-.machine {
-    width: 220px;
-    height: 260px;
-    margin: 20px auto;
-    background: #ffc2d1;
-    border-radius: 20px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* spinning mini capsules */
-.capsules {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-.capsule-mini {
-    width: 30px;
-    height: 30px;
-    background: white;
-    border-radius: 50%;
-    position: absolute;
-}
-
-/* spin animation */
-.spinCapsules {
-    animation: spinCaps 1s linear infinite;
-}
-
-@keyframes spinCaps {
-    0% { transform: rotate(0); }
-    100% { transform: rotate(360deg); }
-}
-
-/* drop area */
-.drop-zone {
-    position: absolute;
-    bottom: 10px;
-    width: 100%;
-    height: 120px;
-}
-
-/* big capsule */
-.capsule {
-    width: 80px;
-    height: 80px;
-    margin: auto;
-    position: relative;
-    top: -100px;
-    transition: 0.6s;
-}
-
-.capsule.show {
-    top: 20px;
-}
-
-/* capsule parts */
-.top, .bottom {
-    width: 80px;
-    height: 40px;
-    background: white;
-    position: absolute;
-}
-
-.top {
-    border-radius: 40px 40px 0 0;
-}
-
-.bottom {
-    top: 40px;
-    border-radius: 0 0 40px 40px;
-}
-
-/* opening */
-.open .top {
-    transform: translateY(-20px);
-}
-
-.open .bottom {
-    transform: translateY(20px);
-}
-
-/* food text */
-.food-name {
-    position: absolute;
-    top: 30px;
-    width: 100%;
-    font-size: 14px;
-}
-
-/* cute bounce */
-.bounce {
-    animation: bounce 0.4s;
-}
-
-@keyframes bounce {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
+body { font-family: 'Comic Sans MS', cursive; text-align:center; margin:0; background:#fffafc;}
+h1,h2,h3,h4 { margin:10px 0; }
+button { padding:14px; margin:8px; border-radius:15px; border:none; font-size:16px; width:80%; max-width:300px; cursor:pointer; color:white; background:#ff8fab;}
+input,select { padding:10px; margin:5px; border-radius:10px; width:80%; max-width:300px;}
+.pink { background:#ffd6e0;}
+.blue { background:#d6ecff;}
+.hidden { display:none;}
+.machine { width:220px; height:260px; margin:20px auto; background:#ffc2d1; border-radius:20px; position:relative; overflow:hidden;}
+.capsules { position:absolute; width:100%; height:100%;}
+.capsule-mini { width:30px; height:30px; background:white; border-radius:50%; position:absolute;}
+.spinCapsules { animation: spinCaps 1s linear infinite;}
+@keyframes spinCaps {0%{transform:rotate(0);} 100%{transform:rotate(360deg);}}
+.drop-zone { position:absolute; bottom:10px; width:100%; height:120px;}
+.capsule { width:80px; height:80px; margin:auto; position:relative; top:-100px; transition:0.6s;}
+.capsule.show { top:20px;}
+.top,.bottom { width:80px; height:40px; background:white; position:absolute;}
+.top { border-radius:40px 40px 0 0;}
+.bottom { top:40px; border-radius:0 0 40px 40px;}
+.open .top { transform:translateY(-20px);}
+.open .bottom { transform:translateY(20px);}
+.food-name { position:absolute; top:30px; width:100%; font-size:14px;}
+.bounce { animation:bounce 0.4s;}
+@keyframes bounce { 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
+.food-item { border-bottom:1px solid #ccc; padding:5px;}
+.food-group { margin-top:10px; border:1px solid #ccc; border-radius:10px; padding:5px; background:#f9f9f9;}
+.food-group h4 { margin:5px;}
 </style>
 </head>
 
 <body>
 
+<!-- HOME PAGE -->
+<div id="homePage">
 <h1>🎀 Food Gachapon 🎀</h1>
+<button onclick="showPage('pickerPage')">🍽️ Pick Food/Drink</button>
+<button onclick="showPage('contributionPage')">📝 Contribute Food List</button>
+</div>
 
-<button onclick="chooseUser('mandy')">Mandy</button>
-<button onclick="chooseUser('sean')">Sean</button>
+<!-- FOOD PICKER PAGE -->
+<div id="pickerPage" class="hidden">
+<h2>Who is choosing today?</h2>
+<button onclick="chooseUserPicker('mandy')">Mandy</button>
+<button onclick="chooseUserPicker('sean')">Sean</button>
 
-<div id="app" class="hidden">
-
-<h3>➕ Add Food</h3>
-<input id="name" placeholder="Food name">
-
-<select id="type">
+<div id="pickerOptions" class="hidden">
+<h3>Filter Options</h3>
+<select id="filterType">
+<option value="any">Any Type</option>
 <option value="food">Food</option>
 <option value="drink">Drink</option>
 </select>
 
-<select id="meal">
+<select id="filterMeal">
+<option value="any">Any Meal</option>
 <option value="breakfast">Breakfast</option>
 <option value="brunch">Brunch/Lunch</option>
 <option value="dinner">Dinner</option>
 <option value="dessert">Dessert</option>
 </select>
 
-<select id="budget">
+<select id="filterBudget">
+<option value="any">Any Budget</option>
 <option value="low">Low</option>
 <option value="medium">Medium</option>
 <option value="high">High</option>
 </select>
 
+<p id="availableCount">Available: 0</p>
+
+<button onclick="spin()">🎰 SPIN</button>
+<button onclick="refreshSpin()">🔄 Spin Again</button>
+
+<div class="machine">
+<div class="capsules" id="capsules"></div>
+<div class="drop-zone">
+<div class="capsule hidden" id="selectedCapsule">
+<div class="top"></div>
+<div class="bottom"></div>
+<div class="food-name" id="foodName"></div>
+</div>
+</div>
+</div>
+
+<div id="result"></div>
+</div>
+
+<button onclick="showPage('homePage')">⬅️ Back Home</button>
+</div>
+
+<!-- FOOD CONTRIBUTION PAGE -->
+<div id="contributionPage" class="hidden">
+<h2>Who is contributing?</h2>
+<button onclick="chooseUserContribution('mandy')">Mandy</button>
+<button onclick="chooseUserContribution('sean')">Sean</button>
+
+<div id="contributionApp" class="hidden">
+<h3>➕ Add Food/Drink</h3>
+<input id="name" placeholder="Food name">
+<select id="type">
+<option value="food">Food</option>
+<option value="drink">Drink</option>
+</select>
+<select id="meal">
+<option value="breakfast">Breakfast</option>
+<option value="brunch">Brunch/Lunch</option>
+<option value="dinner">Dinner</option>
+<option value="dessert">Dessert</option>
+</select>
+<select id="budget">
+<option value="low">Low</option>
+<option value="medium">Medium</option>
+<option value="high">High</option>
+</select>
 <button onclick="addFood()">Add</button>
 
 <h3>📋 Food List</h3>
 <div id="list"></div>
-
-<!-- 🎰 MACHINE -->
-<div class="machine">
-    <div class="capsules" id="capsules"></div>
-
-    <div class="drop-zone">
-        <div class="capsule hidden" id="selectedCapsule">
-            <div class="top"></div>
-            <div class="bottom"></div>
-            <div class="food-name" id="foodName"></div>
-        </div>
-    </div>
 </div>
 
-<button onclick="spin()">🎰 SPIN</button>
-
-<div id="result"></div>
-
+<button onclick="showPage('homePage')">⬅️ Back Home</button>
 </div>
 
 <!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <script>
-// 🔥 REPLACE THIS
+// 🔥 PUT YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
   apiKey: "YOUR_KEY",
   authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID"
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// ----- STATE -----
 let currentUser = "";
+let currentFoods = [];
 
-// choose user
-function chooseUser(user){
-    currentUser = user;
-    app.classList.remove("hidden");
-    loadFoods();
-
-    document.body.className = user === "mandy" ? "pink" : "blue";
+// ----- PAGE NAVIGATION -----
+function showPage(pageId){
+  document.getElementById("homePage").classList.add("hidden");
+  document.getElementById("pickerPage").classList.add("hidden");
+  document.getElementById("contributionPage").classList.add("hidden");
+  document.getElementById(pageId).classList.remove("hidden");
 }
 
-// add food
+// ----- CONTRIBUTION PAGE -----
+function chooseUserContribution(user){
+  currentUser = user;
+  document.getElementById("contributionApp").classList.remove("hidden");
+  document.body.className = user==="mandy"?"pink":"blue";
+  loadFoods();
+}
+
 function addFood(){
-    if(!name.value) return;
-
-    db.collection("foods").add({
-        user: currentUser,
-        name: name.value,
-        type: type.value,
-        meal: meal.value,
-        budget: budget.value
-    });
-
-    name.value = "";
+  const nameInput = document.getElementById("name");
+  if(!nameInput.value) return;
+  db.collection("foods").add({
+    user: currentUser,
+    name: nameInput.value,
+    type: document.getElementById("type").value,
+    meal: document.getElementById("meal").value,
+    budget: document.getElementById("budget").value
+  });
+  nameInput.value = "";
 }
 
-// load foods (realtime)
 function loadFoods(){
-    db.collection("foods")
+  db.collection("foods")
     .where("user","==",currentUser)
     .onSnapshot(snapshot=>{
-        let html = "";
-
-        snapshot.forEach(doc=>{
-            let f = doc.data();
-
-            html += `
-            <div>
-                ${f.name}
-                ✏️ <button onclick="editFood('${doc.id}','${f.name}')">Edit</button>
-                🗑 <button onclick="deleteFood('${doc.id}')">Delete</button>
-            </div>
-            `;
-        });
-
-        list.innerHTML = html;
+      let foods = {};
+      snapshot.forEach(doc=>{
+        let f = doc.data();
+        foods[doc.id] = f;
+      });
+      let html = "";
+      for(let id in foods){
+        let f = foods[id];
+        html += `<div class="food-item">
+          ${f.name} (${f.type} | ${f.meal} | ${f.budget})
+          <button onclick="editFood('${id}','${f.name}')">✏️</button>
+          <button onclick="deleteFood('${id}')">🗑</button>
+        </div>`;
+      }
+      document.getElementById("list").innerHTML = html;
     });
 }
 
-// delete
-function deleteFood(id){
-    db.collection("foods").doc(id).delete();
+function deleteFood(id){ db.collection("foods").doc(id).delete(); }
+function editFood(id,oldName){
+  let newName = prompt("Edit food:",oldName);
+  if(newName) db.collection("foods").doc(id).update({name:newName});
 }
 
-// edit
-function editFood(id, oldName){
-    let newName = prompt("Edit food:", oldName);
-    if(newName){
-        db.collection("foods").doc(id).update({name:newName});
-    }
+// ----- PICKER PAGE -----
+function chooseUserPicker(user){
+  currentUser = user;
+  document.getElementById("pickerOptions").classList.remove("hidden");
+  document.body.className = user==="mandy"?"pink":"blue";
+  loadPickerFoods();
 }
 
-// 🎰 SPIN
+function loadPickerFoods(){
+  db.collection("foods").onSnapshot(snapshot=>{
+    currentFoods = [];
+    snapshot.forEach(doc => currentFoods.push(doc.data()));
+    updateAvailableCount();
+  });
+}
+
+function updateAvailableCount(){
+  const typeFilter = document.getElementById("filterType").value;
+  const mealFilter = document.getElementById("filterMeal").value;
+  const budgetFilter = document.getElementById("filterBudget").value;
+
+  const filtered = currentFoods.filter(f =>
+    f.user===currentUser &&
+    (typeFilter==='any'||f.type===typeFilter) &&
+    (mealFilter==='any'||f.meal===mealFilter) &&
+    (budgetFilter==='any'||f.budget===budgetFilter)
+  );
+  document.getElementById("availableCount").innerText = "Available: "+filtered.length;
+}
+
+document.getElementById("filterType").addEventListener("change",updateAvailableCount);
+document.getElementById("filterMeal").addEventListener("change",updateAvailableCount);
+document.getElementById("filterBudget").addEventListener("change",updateAvailableCount);
+
 function spin(){
-    const capsulesDiv = document.getElementById("capsules");
-    const selected = document.getElementById("selectedCapsule");
-    const foodText = document.getElementById("foodName");
+  const capsulesDiv = document.getElementById("capsules");
+  const selected = document.getElementById("selectedCapsule");
+  const foodText = document.getElementById("foodName");
 
-    selected.classList.add("hidden");
-    selected.classList.remove("show","open");
+  selected.classList.add("hidden");
+  selected.classList.remove("show","open");
+  capsulesDiv.innerHTML = "";
 
-    capsulesDiv.innerHTML = "";
+  for(let i=0;i<12;i++){
+    let c = document.createElement("div");
+    c.className="capsule-mini";
+    let angle=(i/12)*360;
+    let radius=70;
+    c.style.left=90+radius*Math.cos(angle*Math.PI/180)+"px";
+    c.style.top=90+radius*Math.sin(angle*Math.PI/180)+"px";
+    capsulesDiv.appendChild(c);
+  }
 
-    // create spinning mini capsules
-    for(let i=0;i<12;i++){
-        let c = document.createElement("div");
-        c.className = "capsule-mini";
+  capsulesDiv.classList.add("spinCapsules");
 
-        let angle = (i / 12) * 360;
-        let radius = 70;
+  setTimeout(()=>{
+    capsulesDiv.classList.remove("spinCapsules");
 
-        c.style.left = 90 + radius * Math.cos(angle*Math.PI/180) + "px";
-        c.style.top = 90 + radius * Math.sin(angle*Math.PI/180) + "px";
+    const typeFilter = document.getElementById("filterType").value;
+    const mealFilter = document.getElementById("filterMeal").value;
+    const budgetFilter = document.getElementById("filterBudget").value;
 
-        capsulesDiv.appendChild(c);
+    const filtered = currentFoods.filter(f =>
+      f.user===currentUser &&
+      (typeFilter==='any'||f.type===typeFilter) &&
+      (mealFilter==='any'||f.meal===mealFilter) &&
+      (budgetFilter==='any'||f.budget===budgetFilter)
+    );
+
+    if(filtered.length===0){
+      document.getElementById("result").innerText="No food 😢";
+      return;
     }
 
-    capsulesDiv.classList.add("spinCapsules");
+    let pick = filtered[Math.floor(Math.random()*filtered.length)];
+    selected.classList.remove("hidden");
+    selected.classList.add("show");
 
-    setTimeout(async ()=>{
-        capsulesDiv.classList.remove("spinCapsules");
+    setTimeout(()=>{
+      selected.classList.add("open");
+      foodText.innerText=pick.name;
+      const result=document.getElementById("result");
+      result.innerText="🍽️ "+pick.name;
+      result.classList.add("bounce");
+      setTimeout(()=>result.classList.remove("bounce"),400);
+    },600);
 
-        let snapshot = await db.collection("foods")
-            .where("user","==",currentUser).get();
-
-        let foods = [];
-        snapshot.forEach(doc => foods.push(doc.data()));
-
-        if(foods.length === 0){
-            result.innerText = "No food 😢";
-            return;
-        }
-
-        let pick = foods[Math.floor(Math.random()*foods.length)];
-
-        // drop capsule
-        selected.classList.remove("hidden");
-        selected.classList.add("show");
-
-        setTimeout(()=>{
-            selected.classList.add("open");
-            foodText.innerText = pick.name;
-
-            result.innerText = "🍽️ " + pick.name;
-            result.classList.add("bounce");
-
-            setTimeout(()=>result.classList.remove("bounce"),400);
-
-        },600);
-
-    },1500);
+  },1500);
 }
+
+function refreshSpin(){ spin(); }
+
 </script>
 
 </body>
