@@ -17,6 +17,7 @@ body {
 }
 
 h1,h2,h3,h4 { margin:10px 0; }
+
 button { 
   padding:14px; 
   margin:8px; 
@@ -27,8 +28,9 @@ button {
   max-width:300px; 
   cursor:pointer; 
   color:white; 
-  background:#ff8fab; 
+  background:#b39ddb; /* light purple */ 
 }
+
 input,select { 
   padding:10px; 
   margin:5px; 
@@ -163,7 +165,7 @@ const db = firebase.firestore();
 let currentUser = "";
 let currentFoods = [];
 
-// LOAD FOOD LIST ALWAYS
+// LOAD FOOD LIST ALWAYS (persistent)
 db.collection("foods").onSnapshot(snapshot=>{
   currentFoods = [];
   let html = "";
@@ -174,7 +176,6 @@ db.collection("foods").onSnapshot(snapshot=>{
   });
   document.getElementById("list").innerHTML = html;
 
-  // Only update available count if a user is selected
   if(currentUser) updateAvailableCount();
 });
 
